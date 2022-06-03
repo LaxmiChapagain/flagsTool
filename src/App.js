@@ -1,65 +1,61 @@
-import react, { useEffect, useState } from 'react';
+import react, { useEffect, useReducer } from 'react';
 import './App.css';
-import Customcheckbox from './components/Checkbox';
+import Customcheckbox from './components/FtTools';
+import { Flags_Actions, reducer } from './reducers/flags.reducer';
 
-
-var flags = {
+const flags = {
   showColorPercentage: true,
   hasRugShare: false,
   showSaveImage: true,
   fullPageThumb: false,
-  allowCreateYourRugTemplate: false
+  allowCreateYourRugTemplate: false,
+}
+
+const initialState = {
+  flags: flags,
+  submitted: false
 }
 
 function App() {
-  const [showColorPercentage, setShowColorPercentage] = useState(flags.showColorPercentage);
-  const [hasRugShare, setHasRugShare] = useState(flags.hasRugShare);
-  const [showSaveImage, setShowSaveImage] = useState(flags.showSaveImage);
-  const [fullPageThumb, setFullPageThumb] = useState(flags.fullPageThumb);
-  const [allowCreateYourRugTemplate, setAllowCreateYourRugTemplate] = useState(flags.allowCreateYourRugTemplate);
-  const [submitted, setSubmitted] = useState(false);
-
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   function handleSubmit() {
-    flags = {
-      showColorPercentage: showColorPercentage,
-      hasRugshare: hasRugShare,
-      showSaveImage: showSaveImage,
-      fullPageThumb: fullPageThumb,
-      allowCreateYourRugTemplate: allowCreateYourRugTemplate
+    let flags = {
+      showColorPercentage: state.flags.showColorPercentage,
+      hasRugshare: state.flags.hasRugShare,
+      showSaveImage: state.flags.showSaveImage,
+      fullPageThumb: state.flags.fullPageThumb,
+      allowCreateYourRugTemplate: state.flags.allowCreateYourRugTemplate,
     }
 
-    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(flags));
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.flags));
     var dlAnchorElem = document.getElementById('downloadAnchorElem');
     dlAnchorElem.setAttribute("href", dataStr);
     dlAnchorElem.setAttribute("download", "flags.json");
     dlAnchorElem.click();
-    setSubmitted(true);
-
   }
 
   useEffect(() => {
-    setSubmitted(false)
-  }, [showColorPercentage, hasRugShare, showSaveImage, fullPageThumb, allowCreateYourRugTemplate])
-
+    dispatch({ type: Flags_Actions.SET_SUBMITTED, payload: false })
+  }, [state.flags])
 
   return (
     <>
       <div className="App">
         <h1> Flags Tool</h1>
-        <Customcheckbox name="colorPercentage" checked={showColorPercentage} label="Show color percentage" handleChange={(val) => setShowColorPercentage(val)} />
-        <Customcheckbox name="rugShare" checked={hasRugShare} label="Show Rugshare" handleChange={(val) => setHasRugShare(val)} />
-        <Customcheckbox name="showSaveImage" checked={showSaveImage} label="Allow image download" handleChange={(val) => setShowSaveImage(val)} />
-        <Customcheckbox name="fullPageThumb" checked={fullPageThumb} label="Show Full page thumbnails" handleChange={(val) => setFullPageThumb(val)} />
-        <Customcheckbox name="allowCreateYourRugTemplate" checked={allowCreateYourRugTemplate} label="Allow Create your rug template" handleChange={(val) => setAllowCreateYourRugTemplate(val)} />
+        <Customcheckbox name="colorPercentage" checked={state.flags.showColorPercentage} label="Show color percentage" handleChange={(val) => dispatch({ type: Flags_Actions.SET_SHOW_COLOR_PERCENTAGE, payload: val })} />
+        <Customcheckbox name="hasRugShare" checked={state.flags.hasRugShare} label="Show has RugShare" handleChange={(val) => dispatch({ type: Flags_Actions.SET_HAS_RUG_SHARE, payload: val })} />
+        <Customcheckbox name="showSaveImage" checked={state.flags.showSaveImage} label="Show save image" handleChange={(val) => dispatch({ type: Flags_Actions.SET_SHOW_SAVE_IMAGE, payload: val })} />
+        <Customcheckbox name="fullPageThumb" checked={state.flags.fullPageThumb} label="Full page thumb" handleChange={(val) => dispatch({ type: Flags_Actions.SET_FULL_PAGE_THUMB, payload: val })} />
+        <Customcheckbox name="allowCreateYourRugTemplate" checked={state.flags.allowCreateYourRugTemplate} label="Allow create your rug template" handleChange={(val) => dispatch({ type: Flags_Actions.SET_ALLOW_CREATE_YOUR_RUG_TEMPLATE, payload: val })} />
       </div>
 
       <div className='Submit'>
-        <input type="submit" onClick={handleSubmit} />
+        <input type="submit" onClick={() => handleSubmit(dispatch({ type: Flags_Actions.SET_SUBMITTED, payload: true }))} />
       </div>
 
-      {submitted && <textarea id="story" name="story" rows="10" cols="50">
-        {JSON.stringify(flags)}
+      {state.submitted && <textarea id="story" name="story" rows="10" cols="50">
+        {JSON.stringify(initialState.flags)}
       </textarea>}
     </>
   )
