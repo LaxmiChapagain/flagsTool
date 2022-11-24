@@ -1,1 +1,1 @@
-Tool to generate json file on checking checkbox. Developed using React javascript.
+Tool to generate json file based on status of  checkbox. Developed using React javascript.
